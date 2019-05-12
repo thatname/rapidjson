@@ -1619,7 +1619,29 @@ public:
         }
         return *this;
     }
-
+	//! Request the array to have enough capacity to store elements.
+	/*! \param newSize  The new size.
+	\param allocator    Allocator for reallocating memory. It must be the same one as used before. Commonly use GenericDocument::GetAllocator().
+	\return The value itself for fluent API.
+	\note Linear time complexity.
+	*/
+	GenericValue& Resize(SizeType newSize, Allocator &allocator) {
+		RAPIDJSON_ASSERT(IsArray());
+		if (newSize > data_.a.capacity) {
+			data_.a.elements = (GenericValue*)allocator.Realloc(data_.a.elements, data_.a.capacity * sizeof(GenericValue), newSize * sizeof(GenericValue));
+			data_.a.capacity = newSize;
+		}
+		for (SizeType x = data_.a.size; x < newSize; ++x)
+		{
+			new (data_.a.elements + x)GenericValue;
+		}
+		for (SizeType x = newSize; x < data_.a.size; ++x)
+		{
+			data_.a.elements[x].~GenericValue();
+		}
+		data_.a.size = newSize;
+		return *this;
+	}
     //! Append a GenericValue at the end of the array.
     /*! \param value        Value to be appended.
         \param allocator    Allocator for reallocating memory. It must be the same one as used before. Commonly use GenericDocument::GetAllocator().
