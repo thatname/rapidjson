@@ -1628,16 +1628,17 @@ public:
 	GenericValue& Resize(SizeType newSize, Allocator &allocator) {
 		RAPIDJSON_ASSERT(IsArray());
 		if (newSize > data_.a.capacity) {
-			data_.a.elements = (GenericValue*)allocator.Realloc(data_.a.elements, data_.a.capacity * sizeof(GenericValue), newSize * sizeof(GenericValue));
+            SetElementsPointer((GenericValue*)allocator.Realloc(GetElementsPointer(), data_.a.capacity * sizeof(GenericValue), newSize * sizeof(GenericValue)));
 			data_.a.capacity = newSize;
 		}
+        auto elements = GetElementsPointer();
 		for (SizeType x = data_.a.size; x < newSize; ++x)
 		{
-			new (data_.a.elements + x)GenericValue;
+			new (elements + x)GenericValue;
 		}
 		for (SizeType x = newSize; x < data_.a.size; ++x)
 		{
-			data_.a.elements[x].~GenericValue();
+            elements[x].~GenericValue();
 		}
 		data_.a.size = newSize;
 		return *this;
